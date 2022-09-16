@@ -1,5 +1,5 @@
 dependencies:
-- name: mariadb
-  version: 11.3.0
+- name: mysql
+  version: 9.3.2
   repository: https://charts.bitnami.com/bitnami
-  condition: mariadb.enabled
+  condition: mysql.enabled
