@@ -53,9 +53,9 @@ spec:
             - name: LDAP_VERSION
               value: {{ .Values.ldap.version | quote }}
           {{- end }}
-          {{- if .Values.mariadb.enabled }}
+          {{- if .Values.mysql.enabled }}
             - name: DB_HOST
-              value: {{ template "bookstack.mariadb.fullname" . }}
+              value: {{ template "bookstack.mysql.fullname" . }}
             - name: DB_DATABASE
               value: {{ .Values.mariadb.auth.database | quote }}
             - name: DB_USERNAME
