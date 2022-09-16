@@ -55,13 +55,13 @@ spec:
           {{- end }}
           {{- if .Values.mysql.enabled }}
             - name: DB_HOST
-              value: {{ template "bookstack.mysql.fullname" . }}
+              value: "bookstack-mysql"
             - name: DB_DATABASE
-              value: {{ .Values.mariadb.auth.database | quote }}
+              value: {{ .Values.mysql.auth.database | quote }}
             - name: DB_USERNAME
-              value: {{ .Values.mariadb.auth.username | quote }}
+              value: {{ .Values.mysql.auth.username | quote }}
             - name: DB_PASSWORD
-              value: {{ .Values.mariadb.auth.password | quote }}
+              value: {{ .Values.mysql.auth.password | quote }}
           {{- else }}
             - name: DB_HOST
               value: {{ .Values.externalDatabase.host | quote }}
