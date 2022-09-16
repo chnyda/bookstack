@@ -46,6 +46,8 @@ spec:
               path: /
               port: http
           env:
+            - name: APP_URL
+              value: "wiki.app.itera.io"
             - name: DB_HOST
               value: "bookstack-mysql"
             - name: DB_DATABASE
