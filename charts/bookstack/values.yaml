@@ -1,91 +1,72 @@
-# Default values for bookstack.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+mysql:
+  image:
+    tag: 8.0.18-r70
 
-replicaCount: 1
+  auth:
+    rootPassword: rootpassword
+    database: bookstackapp
+    username: bookstack
+    password: password
+
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
 
 image:
-  repository: linuxserver/bookstack
+  replicaCount: 1
+  repository: lscr.io/linuxserver/bookstack
+  tag: "21.12.4"
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "amd64-latest"
+  name: bookstack
+  deployRegistry: true
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-mysql:
-  enabled: true
-  auth:
-    database: bookstack
-    username: bookstack
-    password: "strongpass"
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+extraEnv:
+- name: PUID
+  value: "1000"
+- name: PGID
+  value: "1000"
+- name: APP_URL
+  value: "https://wiki.app.itera.io"
+- name: DB_USER
+  value: "bookstack"
+- name: DB_PASS
+  value: "password"
+- name: DB_DATABASE
+  value: "bookstackapp"
+- name: "TZ"
+  value: "Europe/Paris"
+- name: FILE_UPLOAD_SIZE_LIMIT
+  value: "50"
 
 service:
   type: ClusterIP
-  port: 6875
+  targetPort: 80
+  protocol: TCP
 
 ingress:
   enabled: true
-  className: ""
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-services"
-
-  hosts:
-    - host: wiki.app.itera.io
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  hostnames:
+  - wiki.app.itera.io
   tls:
-    - secretName: bookstack-tls
-      hosts:
-        - wiki.app.itera.io
+  - hosts:
+    - wiki.app.itera.io
+    secretName: bookstack
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  annotations:
+    nginx.ingress.kubernetes.io/client_max_body_size: "5000m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "5000m"
+    nginx.ingress.kubernetes.io/client-body-timeout: "3600"
+    nginx.ingress.kubernetes.io/client-header-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "86400"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+## Persist data to a persistent volume
+persistence:
+  enabled: true
+  size: 50Gi
+  accessMode: "ReadWriteOnce"
+  replicas: "1"
+  mountPath: /config
