@@ -6,9 +6,9 @@ replicaCount: 1
 
 image:
   repository: linuxserver/bookstack
-  pullPolicy: amd64-latest
+  pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "amd64-latest"
 
 imagePullSecrets: []
 nameOverride: ""
