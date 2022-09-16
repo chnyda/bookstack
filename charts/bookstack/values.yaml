@@ -29,7 +29,7 @@ extraEnv:
 - name: MAIL_PORT
   value: 587
 - name: MAIL_USERNAME
-  value: "someuser".io
+  value: "someuser"
 - name: MAIL_PASSWORD
   value: "somepassword"
 - name: MAIL_FROM
