@@ -22,6 +22,20 @@ image:
   deployRegistry: true
 
 extraEnv:
+- name: MAIL_DRIVER
+  value: smtp
+- name: MAIL_HOST
+  value: smtp.gmail.com
+- name: MAIL_PORT
+  value: 587
+- name: MAIL_USERNAME
+  value: "someuser".io
+- name: MAIL_PASSWORD
+  value: "somepassword"
+- name: MAIL_FROM
+  value: "someaddress"
+- name: MAIL_FROM_NAME
+  value: BookStack
 - name: PUID
   value: "1000"
 - name: PGID
