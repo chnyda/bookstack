@@ -1,5 +1,0 @@
-dependencies:
-- name: mysql
-  version: 9.3.2
-  repository: https://charts.bitnami.com/bitnami
-  condition: mysql.enabled

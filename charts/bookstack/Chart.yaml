@@ -1,5 +1,12 @@
 apiVersion: v2
-appVersion: 0.29.3
-description: BookStack is a simple, self-hosted, easy-to-use platform for organising and storing information.
 name: bookstack
+description: Bookstack Wiki
+type: application
 version: 1.0.0
+appVersion: "1.0.0"
+
+dependencies:
+- name: mysql
+  version: 9.3.2
+  repository: https://charts.bitnami.com/bitnami
+  condition: mysql.enabled

@@ -1,28 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "bookstack.fullname" . }}
+  name: {{ include "bookstack.fullname" . }}
   labels:
-    app: {{ template "bookstack.name" . }}
-    chart: {{ template "bookstack.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "bookstack.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
-      app: {{ template "bookstack.name" . }}
-      release: {{ .Release.Name }}
+      {{- include "bookstack.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        app: {{ template "bookstack.name" . }}
-        release: {{ .Release.Name }}
+        {{- include "bookstack.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ template "bookstack.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "bookstack.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -37,23 +46,6 @@ spec:
               path: /
               port: http
           env:
-          {{- if .Values.ldap.enabled }}
-            - name: AUTH_METHOD
-              value: ldap
-            - name: LDAP_SERVER
-              value: {{ .Values.ldap.server | quote }}
-            - name: LDAP_BASE_DN
-              value: {{ .Values.ldap.base_dn | quote }}
-            - name: LDAP_DN
-              value: {{ .Values.ldap.dn | quote }}
-            - name: LDAP_PASS
-              value: {{ .Values.ldap.pass | quote }}
-            - name: LDAP_USER_FILTER
-              value: {{ .Values.ldap.userFilter | quote }}
-            - name: LDAP_VERSION
-              value: {{ .Values.ldap.version | quote }}
-          {{- end }}
-          {{- if .Values.mysql.enabled }}
             - name: DB_HOST
               value: "bookstack-mysql"
             - name: DB_DATABASE
@@ -62,49 +54,17 @@ spec:
               value: {{ .Values.mysql.auth.username | quote }}
             - name: DB_PASSWORD
               value: {{ .Values.mysql.auth.password | quote }}
-          {{- else }}
-            - name: DB_HOST
-              value: {{ .Values.externalDatabase.host | quote }}
-            - name: DB_DATABASE
-              value: {{ .Values.externalDatabase.database | quote }}
-            - name: DB_USERNAME
-              value: {{ .Values.externalDatabase.user | quote }}
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ printf "%s-%s" .Release.Name "externaldb" }}
-                  key: db-password
-          {{- end }}
-          {{- if .Values.app.key }}
-            - name: APP_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ printf "%s-%s" .Release.Name "app" }}
-                  key: app-key
-          {{- end }}
-          {{- range $key, $value := .Values.env }}
-            - name: {{ $key | upper | replace "." "_" }}
-              value: {{ $value | quote }}
-          {{- end }}
-          volumeMounts:
-          - name: uploads
-            mountPath: /var/www/bookstack/public/uploads
-          - name: storage
-            mountPath: /var/www/bookstack/storage/uploads
           resources:
-{{ toYaml .Values.resources | indent 12 }}
-      volumes:
-        - name: uploads
-        {{- if .Values.persistence.uploads.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.persistence.uploads.existingClaim | default (printf "%s-%s" (include "bookstack.fullname" .) "uploads") }}
-        {{- else }}
-          emptyDir: {}
-        {{- end }}
-        - name: storage
-        {{- if .Values.persistence.storage.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.persistence.storage.existingClaim | default (printf "%s-%s" (include "bookstack.fullname" .) "storage") }}
-        {{- else }}
-          emptyDir: {}
-        {{- end -}}
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
