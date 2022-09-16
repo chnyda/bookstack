@@ -57,14 +57,11 @@ spec:
             - name: DB_HOST
               value: {{ template "bookstack.mariadb.fullname" . }}
             - name: DB_DATABASE
-              value: {{ .Values.mariadb.db.name | quote }}
+              value: {{ .Values.mariadb.auth.database | quote }}
             - name: DB_USERNAME
-              value: {{ .Values.mariadb.db.user | quote }}
+              value: {{ .Values.mariadb.auth.username | quote }}
             - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "bookstack.mariadb.fullname" . }}
-                  key: mariadb-password
+              value: {{ .Values.mariadb.auth.password | quote }}
           {{- else }}
             - name: DB_HOST
               value: {{ .Values.externalDatabase.host | quote }}
